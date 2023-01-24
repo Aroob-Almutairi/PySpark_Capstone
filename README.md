@@ -18,6 +18,8 @@ Studying the dataset that is not representative and highlights the effect of ina
 ## Dataset:
 
 #### Adults:
+The data we used is from UCI, the data set also known as "Census Income" dataset. It contains 1M record and 15 column.
+
 | Features  | Meaning |
 | ------------- | ------------- |
 | age  | continuous  |
@@ -48,8 +50,9 @@ Based on the training model we have used, The results were:
 <img  alt="image" src="https://user-images.githubusercontent.com/117013670/214180521-0b339152-3617-40fc-8822-b0ec443a1336.png" width="900" height="150">
 
   
-
+___________________________________________________________________________________________
 
   
 <p align="center">
-<img src="https://user-images.githubusercontent.com/117013670/214181487-98c46dae-bfa2-4318-8fe0-bb4524d0c5c2.png" width="400" height="100">
+<img src="https://user-images.githubusercontent.com/117013670/214181884-b8199fea-9323-4ab8-befb-e44ec0e09fd8.png" width="400" height="100">
+
