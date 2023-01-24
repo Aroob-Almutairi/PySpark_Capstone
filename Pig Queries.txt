@@ -1,0 +1,511 @@
+1. Replacing the '?' in all the columns with Not-specified
+2. Make the values for education consistant
+3. Change the values for salary to be 50000 if <=50k, and 50001 if >50k
+---------------------------------------------------------------------------------
+
+-- Load the data set
+adult= LOAD '/Users/Ghaliah_Maher/Desktop/Big_Data_AI/Capstone_PySpark_U_Data/clean_data_for_eda_pig.csv' USING org.apache.pig.piggybank.storage.CSVExcelStorage(',', 'YES_MULTILINE', 'UNIX', 'SKIP_INPUT_HEADER') AS (age:int, workclass: chararray, fnlwgt:int, education:chararray, education_num:int, marital_status: chararray, occupation: chararray, relationship: chararray, race: chararray, gender:chararray, capital_gain:int, capital_loss:int, hours_per_week:int, native_country: chararray, salary: int);
+dump adult;
+																																													
+---------------------------------------------------------------------------------
+1. How Many Females, and males?
+
+-- Group by gender
+group_gender = GROUP adult by gender;
+
+-- Creating a count 
+count_gender = FOREACH group_gender GENERATE group as gender,COUNT(adult.gender) AS count_num;
+
+-- displaying the count number
+Dump count_gender;
+
+STORE count_gender into '/Users/Ghaliah_Maher/Desktop/Big_Data_AI/Capstone_PySpark_U_Data/Pig_Result_Files/count_gender' USING PigStorage (',');
+
+
+---------------------------------------------------------------------------------
+2. How Many salaries  >50K and  <=50k?
+
+-- Group by the salary
+group_salary = GROUP adult by salary;
+
+-- Creating a count 
+count_salary = FOREACH group_salary GENERATE group as salary, COUNT(adult.salary) AS count_num;
+
+-- displaying the count number
+Dump count_salary;
+
+STORE count_salary into '/Users/Ghaliah_Maher/Desktop/Big_Data_AI/Capstone_PySpark_U_Data/Pig_Result_Files/count_salary' USING PigStorage (',');
+
+---------------------------------------------------------------------------------
+3. The numbers of instance in each country?
+
+-- Group by native_country
+
+group_native_country = GROUP adult by native_country;
+
+-- Creating a count 
+count_native_country = FOREACH group_native_country GENERATE group as native_country, COUNT(adult. native_country) AS count_num;
+
+-- displaying the count number
+Dump count_native_country;
+
+STORE count_native_country into '/Users/Ghaliah_Maher/Desktop/Big_Data_AI/Capstone_PySpark_U_Data/Pig_Result_Files/count_native_country' USING PigStorage (',');
+
+---------------------------------------------------------------------------------
+4. How many dose have capital gain grater than the capital loss?
+
+-- Filtering by capital gain> capital loss
+filter_gain_grater_loss= FILTER adult BY (capital_gain>capital_loss);
+
+-- Group by the all
+group_gain_grater_loss = GROUP filter_gain_grater_loss all;
+
+-- Creating a count 
+count_gain_grater_loss = FOREACH group_gain_grater_loss GENERATE COUNT(filter_gain_grater_loss) AS count_num;
+
+-- displaying the count number
+Dump count_gain_grater_loss;
+
+STORE count_gain_grater_loss into '/Users/Ghaliah_Maher/Desktop/Big_Data_AI/Capstone_PySpark_U_Data/Pig_Result_Files/count_gain_grater_loss' USING PigStorage (',');
+
+
+---------------------------------------------------------------------------------
+5. How many races are there?
+
+-- Group by the all
+group_race = GROUP adult by race;
+
+-- Creating a count 
+count_race = FOREACH group_race GENERATE group as race, COUNT(adult.race) AS count_num;
+
+-- displaying the count number
+Dump count_race;
+
+STORE count_race into '/Users/Ghaliah_Maher/Desktop/Big_Data_AI/Capstone_PySpark_U_Data/Pig_Result_Files/count_race' USING PigStorage (',');
+---------------------------------------------------------------------------------
+6. Highest count of education num, desc order?
+
+-- Group by the all
+group_education_num = GROUP adult by education_num;
+
+-- Creating a count 
+count_education_num = FOREACH group_education_num GENERATE group as education_num, COUNT(adult.education_num) AS count_num;
+
+-- displaying the count number
+Dump count_education_num;
+
+order_count_education_num = ORDER  count_education_num BY count_num DESC;
+
+Dump order_count_education_num;
+
+STORE count_education_num into '/Users/Ghaliah_Maher/Desktop/Big_Data_AI/Capstone_PySpark_U_Data/Pig_Result_Files/count_education_num' USING PigStorage (',');
+
+STORE order_count_education_num into '/Users/Ghaliah_Maher/Desktop/Big_Data_AI/Capstone_PySpark_U_Data/Pig_Result_Files/order_count_education_num' USING PigStorage (',');
+-------------------------------------------------------------------------------------------------------------------------------------
+
+7.	Count the Workclass that education is Masters and salary greater than 50k in desc order?
+
+-- Filtter the data based on the condition in question
+Masters_Filter = FILTER adult BY education == 'Masters' and salary =='50001';
+
+-- Group by the workclass
+group_workclass = GROUP Masters_Filter by workclass;
+
+-- Creating a count 
+count_workclass = FOREACH group_workclass GENERATE group as workclass, COUNT(Masters_Filter.workclass) AS count_num;
+
+-- Order the result 
+order_count_workclass = ORDER  count_workclass BY count_num DESC;
+
+-- displaying the results
+Dump order_count_workclass;
+
+--Store the results
+STORE order_count_workclass into '/user/Aroob_Almutairi/Capstone_PySpark_U_Data/order_count_workclass' USING PigStorage (',');
+-------------------------------------------------------------------------------------------------------------------------------------
+8.	Count Marital status that race is White and capital gain is less than 1000 and salary less than 50k in desc order?
+
+-- Filtter the data based on the condition in question
+marital_status_Filter = FILTER adult BY race == 'White' and salary =='50000' and capital_gain < 1000;
+
+-- Group by the marital_status
+group_All = GROUP marital_status_Filter By marital_status;
+
+-- Creating a count 
+count_marital_status = FOREACH group_All GENERATE group as marital_status , COUNT(marital_status_Filter.marital_status) AS count_num;
+
+-- Order the result 
+order_count_marital_status = ORDER  count_marital_status BY count_num DESC;
+
+-- displaying the results
+Dump order_count_marital_status;
+
+--Store the results
+STORE order_count_marital_status into '/user/Aroob_Almutairi/Capstone_PySpark_U_Data/order_count_marital_status' USING PigStorage (',');
+-------------------------------------------------------------------------------------------------------------------------------------
+9.	Count the number of people who is unmarried and female and in US and have Doctorate or Bachelors or Masters degree ?
+
+-- Filtter the data based on the condition in question
+PPL_Filter = FILTER adult BY relationship == 'Unmarried' and gender =='Female' and native_country =='United-States'
+and (education == 'Masters' OR education == 'Bachelors' OR education == 'Doctorate');
+
+-- Group by the ALL
+group_All = GROUP PPL_Filter ALL;
+
+-- Creating a count 
+count_PPL = FOREACH group_All GENERATE COUNT(PPL_Filter) AS count_num;
+
+-- displaying the results
+Dump count_PPL;
+
+--Store the results
+STORE count_PPL into '/user/Aroob_Almutairi/Capstone_PySpark_U_Data/count_PPL' USING PigStorage (',');
+-------------------------------------------------------------------------------------------------------------------------------------
+10.	Find the minimum and maximum capital gain which is black race and occupation is Tech-support or Sales?
+
+-- Filtter the data based on the condition in question
+occupation_Filter = FILTER adult BY race == 'Black' and (occupation == 'Tech-support' or occupation == 'Sales');
+
+-- Group by all
+groupByAll = GROUP occupation_Filter all;
+
+-- minimum and maximum capital gain 
+min_max_capital_gain = FOREACH groupByAll GENERATE MIN(occupation_Filter.capital_gain) AS Min_capital_gain, MAX(occupation_Filter.capital_gain) AS Max_capital_gain;
+
+-- displaying the results
+Dump min_max_capital_gain;
+
+--Store the results
+STORE min_max_capital_gain into '/user/Aroob_Almutairi/Capstone_PySpark_U_Data/min_max_capital_gain' USING PigStorage (',');
+-------------------------------------------------------------------------------------------------------------------------------------
+11.	Find the minimum and maximum hours_per_week which is Private workclass and marital_status is Never-married or Divorced?
+
+-- Filtter the data based on the condition in question
+Private_Filter = FILTER adult BY workclass == 'Private' and (marital_status == 'Never-married' or marital_status == 'Divorced');
+
+-- Group by all
+groupByAll = GROUP Private_Filter all;
+
+-- minimum and maximum capital gain 
+min_max_hours = FOREACH groupByAll GENERATE MIN(Private_Filter.hours_per_week) AS Min_hours, MAX(Private_Filter.hours_per_week) AS Max_hours;
+
+-- displaying the results
+Dump min_max_hours;
+
+--Store the results
+STORE min_max_hours into '/user/Aroob_Almutairi/Capstone_PySpark_U_Data/min_max_hours' USING PigStorage (',');
+-------------------------------------------------------------------------------------------------------------------------------------
+12.	Count workaholic who thier hours per week greater or equel 70 and age between 20 and 40?
+
+-- Filtter the data based on the condition in question
+workaholic_Filter = FILTER adult BY hours_per_week >= 70 and age >= 20 and age <= 40;
+
+-- Group by the ALL
+group_All = GROUP workaholic_Filter ALL;
+
+-- Creating a count 
+count_workaholic_Filter = FOREACH group_All GENERATE COUNT(workaholic_Filter) AS count_num;
+
+-- displaying the results
+Dump count_workaholic_Filter;
+
+--Store the results
+STORE count_workaholic_Filter into '/user/Aroob_Almutairi/Capstone_PySpark_U_Data/count_workaholic_Filter' USING PigStorage (',');
+-------------------------------------------------------------------------------------------------------------------------------------
+
+13.	Occupation count desc order?
+
+-- Group by the occupation
+group_occupation_num = GROUP adult by occupation;
+
+-- Creating a count 
+count_occupation_num = FOREACH group_occupation_num GENERATE group as occupation, COUNT(adult.occupation) AS count_num;
+
+-- displaying the count number
+
+order_count_occupation_num = ORDER  count_occupation_num BY count_num DESC;
+
+Dump order_count_occupation_num;
+
+STORE order_count_occupation_num into '/Users/Ghaliah_Maher/Desktop/Big_Data_AI/Capstone_PySpark_U_Data/Pig_Queries_Logs_Results_Update_4_/Pig_Result_Files/order_count_occupation_num' USING PigStorage (',');
+
+-------------------------------------------------------------------------------------------------------------------------------------
+14.	count relationship desc order?
+
+-- Group by the relationship
+group_relationship_num = GROUP adult by relationship;
+
+-- Creating a count 
+count_relationship_num = FOREACH group_relationship_num GENERATE group as relationship, COUNT(adult.relationship) AS count_num;
+
+-- displaying the count number
+
+order_count_relationship_num = ORDER  count_relationship_num BY count_num DESC;
+
+Dump order_count_relationship_num;
+
+STORE order_count_relationship_num into '/Users/Ghaliah_Maher/Desktop/Big_Data_AI/Capstone_PySpark_U_Data/Pig_Queries_Logs_Results_Update_4_/Pig_Result_Files/order_count_relationship_num' USING PigStorage (',');
+
+-------------------------------------------------------------------------------------------------------------------------------------
+15.	salary >50K and Bachelors count? 
+
+-- Filtter the data based on the condition in question
+bachelors_filter = FILTER adult BY (salary== 50001) and (education=='Bachelors');
+
+-- Group by the ALL
+group_All = GROUP bachelors_filter ALL;
+
+-- Creating a count 
+count_bachelors_filter = FOREACH group_All GENERATE COUNT(bachelors_filter) AS count_num;
+
+-- displaying the results
+Dump count_bachelors_filter;
+
+STORE count_bachelors_filter into '/Users/Ghaliah_Maher/Desktop/Big_Data_AI/Capstone_PySpark_U_Data/Pig_Queries_Logs_Results_Update_4_/Pig_Result_Files/count_bachelors_filter' USING PigStorage (',');
+
+-------------------------------------------------------------------------------------------------------------------------------------
+16.	male Bachelors count, and female Bachelors count?
+
+-- Filtter the data based on the condition in question
+bachelors_filter = FILTER adult BY (education=='Bachelors');
+
+-- Group by the by gender
+group_gender = GROUP bachelors_filter by gender;
+
+-- Creating a count 
+count_bachelors_gender_filter = FOREACH group_gender GENERATE group as gender, COUNT(bachelors_filter.gender) AS count_num;
+
+-- displaying the results
+Dump count_bachelors_gender_filter;
+
+STORE count_bachelors_gender_filter into '/Users/Ghaliah_Maher/Desktop/Big_Data_AI/Capstone_PySpark_U_Data/Pig_Queries_Logs_Results_Update_4_/Pig_Result_Files/count_bachelors_gender_filter' USING PigStorage (',');
+
+-------------------------------------------------------------------------------------------------------------------------------------
+17.	male max gain, female max gain?
+
+-- Group by the by gender
+group_gender = GROUP adult by gender;
+
+-- Creating a count 
+max_min_gender_gain = FOREACH group_gender GENERATE group as gender, MIN(adult.capital_gain) AS min_gain, MAX(adult.capital_gain) AS max_gain;
+
+-- displaying the results
+Dump max_min_gender_gain;
+
+STORE max_min_gender_gain into '/Users/Ghaliah_Maher/Desktop/Big_Data_AI/Capstone_PySpark_U_Data/Pig_Queries_Logs_Results_Update_4_/Pig_Result_Files/max_min_gender_gain' USING PigStorage (',');
+
+-------------------------------------------------------------------------------------------------------------------------------------
+18.	count not specified occupation?
+
+
+-- Filtter the data based on the condition in question
+not_specified_filter = FILTER adult BY (occupation =='Not-specified');
+
+-- Group by the by all
+group_not_specified = GROUP not_specified_filter all;
+
+-- Creating a count 
+count_not_specified = FOREACH group_not_specified GENERATE COUNT(not_specified_filter) AS count_num;
+
+-- displaying the results
+Dump count_not_specified;
+
+STORE count_not_specified into '/Users/Ghaliah_Maher/Desktop/Big_Data_AI/Capstone_PySpark_U_Data/Pig_Queries_Logs_Results_Update_4_/Pig_Result_Files/count_not_specified' USING PigStorage (',');
+
+-------------------------------------------------------------------------------------------------------------------------------------
+19.	occupation with >50k count for female and male desc order?
+
+-- Filtter the data based on the condition in question
+greater_50k_filter = FILTER adult BY (salary== 50001);
+
+-- Group by the gender
+group_greater_50k_gender = GROUP greater_50k_filter by gender;
+
+-- Creating a count 
+count_greater_50k_gender = FOREACH group_greater_50k_gender GENERATE group as gender,COUNT(greater_50k_filter.gender) AS count_num;
+
+order_count_relationship_num = ORDER  count_greater_50k_gender BY count_num DESC;
+
+-- displaying the results
+Dump count_greater_50k_gender;
+
+STORE count_greater_50k_gender into '/Users/Ghaliah_Maher/Desktop/Big_Data_AI/Capstone_PySpark_U_Data/Pig_Queries_Logs_Results_Update_4_/Pig_Result_Files/count_greater_50k_gender' USING PigStorage (',');
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+20. workclass and gender count.
+
+--grouping the data based on workclass and gender 
+workclass_gender = group adult BY (gender, workclass);
+
+--counting the instances of workclass for each gender 
+count_workclass_gender = FOREACH workclass_gender GENERATE FLATTEN(group) AS (gender, workclass),
+COUNT(adult.age) AS workclass_gender_count; 
+
+DUMP count_workclass_gender
+
+STORE count_workclass_gender INTO '/user/maria_dev/final_capstone_results/q20results' USING PigStorage (',');
+-----------------------------------------------------------------------------------------------------------------------------------------------
+21. How many people who work more than 50 hours a week earn less than 50k by gender?
+
+--Filtering the data for people who work more than 50 hours a week and yet earn less than 50k salary per year
+filter_fiftyhours_fiftyk = FILTER adult BY (hours_per_week > 50) AND (salary == '50000');
+
+--grouping the data by salary and gender
+group_data = GROUP filter_fiftyhours_fiftyk BY (salary, gender);
+
+--counting the people who wore more than 50 hours a week and still earn less than 50k salary per year 
+count_fiftyhours_fiftyk = FOREACH group_data GENERATE FLATTEN(group) AS (salary, gender), COUNT(filter_fiftyhours_fiftyk.age) AS count_people;
+
+--displaying the results 
+DUMP count_fiftyhours_fiftyk;
+
+STORE count_fiftyhours_fiftyk INTO '/user/maria_dev/final_capstone_results/q21results' USING PigStorage (',');
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+22. How much salary for each ethnicity?
+
+--grouping the data by salary and and race
+salary_race = GROUP adult BY (salary, race);
+
+--counting the each race and how much salary they earn per year wheather more than 50k or less than 50k
+count_salary_race = FOREACH salary_race GENERATE FLATTEN(group) AS (salary, race), COUNT(adult.age) AS race_salary;
+
+--displaying the results 
+DUMP count_salary_race;
+
+STORE count_salary_race INTO '/user/maria_dev/final_capstone_results/q22results' USING PigStorage (',');
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+23. How much salary for each education level?
+
+--grouping the data by salary and education
+education_salary = GROUP adult BY (salary, education);
+
+--counting the number of of based on salary and education 
+count_education_salary = FOREACH education_salary GENERATE FLATTEN(group) AS (salary, education), COUNT(adult.age) AS salary_education;
+
+--displaying the results 
+DUMP count_education_salary;
+
+STORE count_education_salary INTO '/user/maria_dev/final_capstone_results/q23results' USING PigStorage (',');
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+24. How much is the average number of years spent on education for each ethnicity?
+
+--grouping the data by and and race
+group_race = GROUP adult BY race;
+
+--counting each race and how much time was spent on education
+count_education_race = FOREACH group_race GENERATE FLATTEN(group) AS race, AVG(adult.education_num) AS avg_education;
+
+--displaying the results 
+DUMP count_education_race;
+
+STORE count_education_race INTO '/user/maria_dev/final_capstone_results/q24results' USING PigStorage (',');
+-------------------------------------------------------------------------------------------------------------------------------------------------
+
+25. How many are people aged less than 20 are in the workforce grouped by their education?
+
+--Filtering the data for people who are aged less than 20 
+aged_less_20 = FILTER adult BY (age < 20);
+
+--grouping the data by education
+group_race = GROUP aged_less_20 BY education;
+
+--counting each race and how much time was spent on education
+count_age_less_20 = FOREACH group_race GENERATE FLATTEN(group) AS education, COUNT(aged_less_20.fnlwgt) AS count_less_20;
+
+--displaying the results 
+DUMP count_age_less_20;
+
+STORE count_age_less_20 INTO '/user/maria_dev/final_capstone_results/q25results' USING PigStorage (',');
+ -------------------------------------------------------------------------------------------------------------------------------------------------
+26. How many people over the age of 60 still working?
+
+--Filter
+Filter_1 = FILTER adult BY (age > 60);
+
+-- Group the data by the filter that i just created 
+Filtered_group = Group Filter_1 all;
+
+-- Count the filltered
+Count_older_than_60 = FOREACH Filtered_group GENERATE COUNT(Filter_1); 
+
+DUMP Count_older_than_60;
+
+STORE Count_older_than_60 into '/user/maria_dev/capstone_2_coding_dojo/Pig_Result_Files/Count_older_than_60' ;
+--------------------------------------------------------------------------------------------------------------------------------
+
+27. How many people git salary that <=50k per educatoin in percentage? 
+
+-- Group
+grp = group adult by education;
+-- Bag
+result = foreach grp {
+    total = COUNT(adult);
+    t = filter adult by salary == '<=50K'; --create a bag which contains only T values
+    generate flatten(group) as education, total as  TOTAL_ROWS_IN_INPUT_TABLE, 100*(double)COUNT(t)/(double)total as PERCENTAGE_TRUE_IN_INPUT_TABLE;
+};
+
+
+DUMP result;
+
+STORE result into '/user/maria_dev/capstone_2_coding_dojo/Pig_Result_Files/education_salary_less_50k' USING PigStorage (',');
+--------------------------------------------------------------------------------------------------------------------------------
+
+28. Are work hours diffirence by education (in average)?
+
+-- Group the data by the filter that i just created 
+Filtered_group = Group adult by education;
+
+-- Avg
+average_hours_education = FOREACH Filtered_group GENERATE group, AVG(adult.hours_per_week); 
+
+DUMP average_hours_education;
+
+STORE average_hours_education into '/user/maria_dev/capstone_2_coding_dojo/Pig_Result_Files/average_hours_education' USING PigStorage (',');
+------------------------------------------------------------------------------------------------------------------------------
+
+29. Count race per education?
+
+-- Group the data by the filter that i just created 
+Filtered_group = Group adult by (race,education);
+
+-- Count 
+Count_race_per_education = FOREACH Filtered_group GENERATE flatten(group) as (race,education), COUNT(adult) as countrace; 
+
+DUMP Count_Occupation_per_education;
+
+STORE Count_race_per_education into '/user/maria_dev/capstone_2_coding_dojo/Pig_Result_Files/Count_race_per_education' USING PigStorage (',');
+
+------------------------------------------------------------------------------------------------------------------------------
+
+30. Occupation count based on education?
+
+-- Group the data by the filter that i just created 
+Filtered_group = Group adult by (occupation,education);
+
+-- Count 
+Count_Occupation_per_education = FOREACH Filtered_group GENERATE flatten(group) as (occupation,education), COUNT(adult) as countrace; 
+
+DUMP Count_Occupation_per_education;
+
+STORE Count_Occupation_per_education into '/user/maria_dev/capstone_2_coding_dojo/Pig_Result_Files/Count_Occupation_per_education' USING PigStorage (',');
+------------------------------------------------------------------------------------------------------------------------------
+
+31. Average age for each workclass?
+
+-- Group the data by the filter that i just created 
+Filtered_group = Group adult by workclass;
+
+-- Count 
+Average_age_for_each_workclass = FOREACH Filtered_group GENERATE group, AVG(adult.age); 
+
+DUMP Average_age_for_each_workclass;
+
+STORE Average_age_for_each_workclass into '/user/maria_dev/capstone_2_coding_dojo/Pig_Result_Files/Average_age_for_each_workclass' USING PigStorage (',');
+
+
+
+ 
